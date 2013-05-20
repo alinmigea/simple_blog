@@ -1,5 +1,5 @@
 <?php
-function retrieveEntries($db, $id=NULL)
+function retrieveEntries($db, $page, $id=NULL)
 {
 	/*
 	 * If an entry ID was supplied, load the associated entry
@@ -21,20 +21,21 @@ function retrieveEntries($db, $id=NULL)
 		$fulldisp = 1;
 	}
 	/*
-	 * If no entry ID was supplied, load all entry titles
+	 * If no entry ID was supplied, load all entry titles for the page
 	*/
 	else
 	{
-		$sql = "SELECT id, title
+		$sql = "SELECT id, page, title, entry
 				FROM entries
+				WHERE page=?
 				ORDER BY created DESC";
+		$stmt = $db->prepare($sql);
+		$stmt->execute(array($page));
+		$e = NULL; // Declare the variable to avoid errors
 		
 		// Loop through returned results and store as an array
-		foreach($db->query($sql) as $row) {
-			$e[] = array(							//sirul de siruri de (id si title)
-						'id' => $row['id'],
-						'title' => $row['title']
-					);
+		while($row = $stmt->fetch()) {
+			$e[] = $row;
 		}
 		
 		// Set the fulldisp flag for multiple entries
